@@ -2,6 +2,8 @@
 
 Created By: Brian We, Daniel Ribeiro, James Cai, Tengis Kelley
 
+reviews.csv is too large to upload to this repository: https://drive.google.com/file/d/10TunDSxvyIv831bvqMqObv6l5OqFTakf/view?usp=drive_link
+
 ## Installation
 1. Clone the repository
 2. Install the required Python packages:
