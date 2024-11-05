@@ -1,2 +1,15 @@
-.ipynb_checkpoints/
+.ipynb_checkpoints
 .DS_Store
+
+# pipeline
+.pipeline/airflow.cfg
+.pipeline/airflow.db
+.pipeline/airflow-webserver.pid
+.pipeline/webserver_config.py
+.pipeline/logs
+.pipeline/standalone_admin_password.txt
+.pipeline/.DS_Store
+.pipeline/__pycache__/
+.pipeline/.env
+.pipeline/.venv
+.pipeline/.airflowctl

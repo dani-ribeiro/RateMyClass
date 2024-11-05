@@ -1,1 +1,50 @@
-# RateMyClass
+# Rate My Class
+
+Created By: Brian We, Daniel Ribeiro, James Cai, Tengis Kelley
+
+## Installation
+1. Clone the repository
+2. Install the required Python packages:
+```bash
+pip install -r requirements.txt
+```
+3. Install the required npm packages
+```bash
+npm install --prefix pipeline/dags/data_collection/get_professors
+```
+## Usage
+
+1. Build the Airflow pipeline
+    ```bash
+    airflowctl build pipeline/
+    ```
+2. Start the Airflow pipeline
+    ```bash
+    airflowctl start pipeline/
+    ```
+4. Open `localhost:8080` in your browser using the generated password from [pipeline/standalone_admin_password.txt](pipeline/standalone_admin_password.txt)
+5. Unpause and trigger the `pipeline` DAG
+6. Watch the magic happen
+
+__NOTE__:<br>
+The `get_reviews` task in the `data_collection` task group may take around 10 minutes to complete. This is normal as it's requesting every professor review at WashU from RateMyProfessors. If [pipeline/dags/reviews.csv](pipeline/dags/reviews.csv) is already saved, you can skip the `get_reviews` task by commenting it out, and uncommenting the dummy operator for `get_reviews`. Lines 45-55 in [pipeline.py](pipeline/dags/pipeline.py)
+
+```python
+# task: get_reviews
+# gets all reviews for every professor at WashU and writes to data_cleaning/reviews.csv
+    get_reviews = PythonOperator(
+        task_id='get_reviews',
+        python_callable=get_reviews
+    )
+
+# use this to skip get_reviews task
+#get_reviews = DummyOperator(
+#    task_id='get_reviews'
+#)
+```
+
+## Data Collection
+
+The data collection process consists of two main steps: professor information, and review retrieval. We first get a list of all professors at WashU using @ritchiefu/rate-my-professors's GraphQL API wrapper (linked below), outputting the data directly to `professors.json` in the `get_reviews` directory. Next, the `get_reviews.py` script reads this file and gets all reviews for each professor, storing them in `reviews.csv`.
+
+GraphQL API Wrapper: @ritchiefu/rate-my-professors: https://www.npmjs.com/package/@ritchiefu/rate-my-professors

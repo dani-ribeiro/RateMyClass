@@ -1,0 +1,4 @@
+pandas
+requests
+fuzzywuzzy
+apache-airflow-providers-snowflake
