@@ -3,6 +3,7 @@
 
 # pipeline
 .pipeline/airflow.cfg
+.pipeline/settings.yaml
 .pipeline/airflow.db
 .pipeline/airflow-webserver.pid
 .pipeline/webserver_config.py
@@ -13,3 +14,5 @@
 .pipeline/.env
 .pipeline/.venv
 .pipeline/.airflowctl
+# reviews.csv file is too big for github (see README.md to download from Google Drive)
+.pipeline/dags/reviews.csv
