@@ -15,12 +15,16 @@ pip install -r requirements.txt
 npm install --prefix pipeline/dags/data_collection/get_professors
 ```
 ## Usage
-
-1. Build the Airflow pipeline
+1. Initialize the Airflow project
+    ```bash
+    airflowctl init pipeline/
+    ```
+    You will may be warned that the directory is not empty: type 'Y' or agree. This is OK<br><br> 
+2. Build the Airflow pipeline
     ```bash
     airflowctl build pipeline/
     ```
-2. Start the Airflow pipeline
+3. Start the Airflow pipeline
     ```bash
     airflowctl start pipeline/
     ```
