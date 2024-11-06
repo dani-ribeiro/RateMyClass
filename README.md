@@ -19,7 +19,7 @@ npm install --prefix pipeline/dags/data_collection/get_professors
     ```bash
     airflowctl init pipeline/
     ```
-    You will may be warned that the directory is not empty: type 'Y' or agree. This is OK<br><br> 
+    You may be warned that the directory is not empty: type 'Y' or agree. This is OK<br><br> 
 2. Build the Airflow pipeline
     ```bash
     airflowctl build pipeline/
