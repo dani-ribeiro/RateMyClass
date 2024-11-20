@@ -159,13 +159,13 @@ def upload_to_snowflake(dataframes):
 
         with conn.cursor() as cursor:
             # create & use warehouse, db, schema if not exists
-            cursor.execute(f'CREATE WAREHOUSE IF NOT EXISTS {conn_details.extra_dejson.get('warehouse')}')
-            cursor.execute(f'ALTER WAREHOUSE {conn_details.extra_dejson.get('warehouse')} SET WAREHOUSE_SIZE=XSmall')
-            cursor.execute(f'USE WAREHOUSE {conn_details.extra_dejson.get('warehouse')}')
-            cursor.execute(f'CREATE DATABASE IF NOT EXISTS {conn_details.extra_dejson.get('database')}')
-            cursor.execute(f'USE DATABASE {conn_details.extra_dejson.get('database')}')
-            cursor.execute(f'CREATE SCHEMA IF NOT EXISTS {conn_details.extra_dejson.get('schema')}')
-            cursor.execute(f'USE SCHEMA {conn_details.extra_dejson.get('schema')}')
+            cursor.execute(f'CREATE WAREHOUSE IF NOT EXISTS {conn_details.extra_dejson.get("warehouse")}')
+            cursor.execute(f'ALTER WAREHOUSE {conn_details.extra_dejson.get("warehouse")} SET WAREHOUSE_SIZE=XSmall')
+            cursor.execute(f'USE WAREHOUSE {conn_details.extra_dejson.get("warehouse")}')
+            cursor.execute(f'CREATE DATABASE IF NOT EXISTS {conn_details.extra_dejson.get("database")}')
+            cursor.execute(f'USE DATABASE {conn_details.extra_dejson.get("database")}')
+            cursor.execute(f'CREATE SCHEMA IF NOT EXISTS {conn_details.extra_dejson.get("schema")}')
+            cursor.execute(f'USE SCHEMA {conn_details.extra_dejson.get("schema")}')
 
             # create tables
             for table, query in table_creation_queries.items():
