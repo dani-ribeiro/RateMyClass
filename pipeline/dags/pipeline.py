@@ -7,8 +7,27 @@ from utils.file_checks import check_professors_file, check_reviews_file, check_c
 from data_collection.get_reviews.get_reviews import get_reviews
 from data_cleaning.clean_data import clean_data
 from data_storage.store_data import store_data
+from sentiment_analysis.analyze_sentiment import analyze_sentiment
 from airflow.operators.dummy import DummyOperator   # used to skip tasks (temporary debugging purposes)
+from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
+from airflow.hooks.base import BaseHook
 import os
+
+# getting database information dynamically (assume the conn_id is described as below)
+snowflake_conn_id = 'snowflake_default'
+conn_details = BaseHook.get_connection(snowflake_conn_id)
+
+DATABASE = conn_details.extra_dejson.get('database')
+
+# relational and fact/dim tables will be stored in the same schema but naming conventions will make them clear
+SCHEMA = conn_details.extra_dejson.get('schema')
+
+# fact and dimension table names
+FACT_REVIEW = 'fact_review'
+DIM_CLASS = 'dim_class'
+DIM_PROFESSOR = 'dim_professor'
+DIM_SCHOOL = 'dim_school'
+DIM_DEPARTMENT = 'dim_department'
 
 # disable proxy to allow web requests
 os.environ['NO_PROXY'] = '*'
@@ -32,7 +51,7 @@ with DAG(
         # gets information for every professor at WashU and writes to get_reviews/professors.json
         get_professors = BashOperator(
             task_id='get_professors',
-            bash_command="cd /Users/daniel/CSE314A/Process-RateMyClass/pipeline/dags/data_collection/get_professors && npx ava"
+            bash_command="cd ~/airflow/RateMyClass/pipeline/dags/data_collection/get_professors && npx ava"
         )
 
         # task: check_professors_file
@@ -86,10 +105,10 @@ with DAG(
         # TODO
         # task: analyze_sentiment
         # perform sentiment analysis on each review, add sentiment score as a new column and save to reviews.csv
-        # analyze_sentiment = PythonOperator(
-        #     task_id='analyze_sentiment',
-        #     python_callable=analyze_sentiment
-        # )
+        analyze_sentiment = PythonOperator(
+            task_id='analyze_sentiment',
+            python_callable=analyze_sentiment
+        )
 
         # task: check_analyzed_reviews_file
         # checks if the analyzed reviews.csv exists before proceeding
@@ -98,8 +117,7 @@ with DAG(
             python_callable=check_analyzed_reviews_file
         )
 
-        # analyze_sentiment >> check_analyzed_reviews_file
-        check_analyzed_reviews_file
+        analyze_sentiment >> check_analyzed_reviews_file
 
     # task: data_storage
     # organizes/normalizes data into multiple tables and uploads to snowflake
@@ -108,4 +126,57 @@ with DAG(
         python_callable=store_data
     )
 
-    data_collection >> data_cleaning >> sentiment_analysis >> data_storage
+    # task: data_transformation
+    # transforms normalized data into fact and dimension tables for OLAP
+    data_transformation = SQLExecuteQueryOperator(
+        task_id='data_transformation',
+        conn_id=snowflake_conn_id,
+        sql=f"""
+        CREATE TABLE IF NOT EXISTS {DATABASE}.{SCHEMA}.{FACT_REVIEW} AS (
+            SELECT
+                r.REVIEW_ID AS REVIEW_ID,
+                r.CLASS_ID AS CLASS_ID,
+                r.PROFESSOR_ID AS PROFESSOR_ID,
+                c.DEPARTMENT_ID AS DEPARTMENT_ID,
+                c.SCHOOL_ID AS SCHOOL_ID,
+                r.QUALITY AS QUALITY,
+                r.DIFFICULTY AS DIFFICULTY,
+                r.REVIEW AS REVIEW,
+                r.DATE AS DATE,
+                r.WOULD_TAKE_AGAIN AS WOULD_TAKE_AGAIN,
+                r.GRADE AS GRADE,
+                r.ATTENDANCE AS ATTENDANCE,
+                r.TEXTBOOK_USAGE AS TEXTBOOK_USAGE,
+                (r.THUMBS_UP - r.THUMBS_DOWN) AS NET_THUMBS_UP,
+                r.SENTIMENT_SCORE AS SENTIMENT_SCORE
+            FROM {DATABASE}.{SCHEMA}.reviews AS r
+            JOIN {DATABASE}.{SCHEMA}.classes AS c ON c.CLASS_ID = r.CLASS_ID
+        );
+
+        CREATE TABLE IF NOT EXISTS {DATABASE}.{SCHEMA}.{DIM_CLASS} AS
+            SELECT 
+                class_ID,
+                course_code
+            FROM {DATABASE}.{SCHEMA}.classes;
+
+        CREATE TABLE IF NOT EXISTS {DATABASE}.{SCHEMA}.{DIM_PROFESSOR} AS
+            SELECT 
+                professor_ID,
+                professor_name
+            FROM {DATABASE}.{SCHEMA}.professors;
+
+        CREATE TABLE IF NOT EXISTS {DATABASE}.{SCHEMA}.{DIM_SCHOOL} AS
+            SELECT 
+                school_ID,
+                school_name
+            FROM {DATABASE}.{SCHEMA}.schools;
+
+        CREATE TABLE IF NOT EXISTS {DATABASE}.{SCHEMA}.{DIM_DEPARTMENT} AS
+            SELECT 
+                department_ID,
+                department_name
+            FROM {DATABASE}.{SCHEMA}.departments;
+        """
+    )
+
+    data_collection >> data_cleaning >> sentiment_analysis >> data_storage >> data_transformation

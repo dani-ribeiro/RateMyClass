@@ -25,6 +25,7 @@ def organize_data():
             'GRADE',
             'ATTENDANCE',
             'TEXTBOOK_USAGE',
+            'SENTIMENT_SCORE',
             'THUMBS_UP',
             'THUMBS_DOWN'
         ]
@@ -142,6 +143,7 @@ def upload_to_snowflake(dataframes):
                     textbook_usage BOOLEAN,
                     thumbs_up INTEGER,
                     thumbs_down INTEGER,
+                    sentiment_score VARCHAR,
                     FOREIGN KEY (class_id) REFERENCES classes(class_id),
                     FOREIGN KEY (professor_id) REFERENCES professors(professor_id)
                 )
@@ -159,13 +161,13 @@ def upload_to_snowflake(dataframes):
 
         with conn.cursor() as cursor:
             # create & use warehouse, db, schema if not exists
-            cursor.execute(f'CREATE WAREHOUSE IF NOT EXISTS {conn_details.extra_dejson.get('warehouse')}')
-            cursor.execute(f'ALTER WAREHOUSE {conn_details.extra_dejson.get('warehouse')} SET WAREHOUSE_SIZE=XSmall')
-            cursor.execute(f'USE WAREHOUSE {conn_details.extra_dejson.get('warehouse')}')
-            cursor.execute(f'CREATE DATABASE IF NOT EXISTS {conn_details.extra_dejson.get('database')}')
-            cursor.execute(f'USE DATABASE {conn_details.extra_dejson.get('database')}')
-            cursor.execute(f'CREATE SCHEMA IF NOT EXISTS {conn_details.extra_dejson.get('schema')}')
-            cursor.execute(f'USE SCHEMA {conn_details.extra_dejson.get('schema')}')
+            cursor.execute(f'CREATE WAREHOUSE IF NOT EXISTS {conn_details.extra_dejson.get("warehouse")}')
+            cursor.execute(f'ALTER WAREHOUSE {conn_details.extra_dejson.get("warehouse")} SET WAREHOUSE_SIZE=XSmall')
+            cursor.execute(f'USE WAREHOUSE {conn_details.extra_dejson.get("warehouse")}')
+            cursor.execute(f'CREATE DATABASE IF NOT EXISTS {conn_details.extra_dejson.get("database")}')
+            cursor.execute(f'USE DATABASE {conn_details.extra_dejson.get("database")}')
+            cursor.execute(f'CREATE SCHEMA IF NOT EXISTS {conn_details.extra_dejson.get("schema")}')
+            cursor.execute(f'USE SCHEMA {conn_details.extra_dejson.get("schema")}')
 
             # create tables
             for table, query in table_creation_queries.items():
