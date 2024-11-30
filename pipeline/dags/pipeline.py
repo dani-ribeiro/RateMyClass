@@ -32,6 +32,9 @@ DIM_DEPARTMENT = 'dim_department'
 # disable proxy to allow web requests
 os.environ['NO_PROXY'] = '*'
 
+# pipeline.py's file path
+BASE_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
+
 default_args = {
     'owner': 'airflow'
 }
@@ -51,7 +54,7 @@ with DAG(
         # gets information for every professor at WashU and writes to get_reviews/professors.json
         get_professors = BashOperator(
             task_id='get_professors',
-            bash_command="cd ~/airflow/RateMyClass/pipeline/dags/data_collection/get_professors && npx ava"
+            bash_command=f"cd {os.path.join(BASE_DIRECTORY, 'data_collection/get_professors')} && npx ava"
         )
 
         # task: check_professors_file

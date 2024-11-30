@@ -2,17 +2,17 @@
 .DS_Store
 
 # pipeline
-.pipeline/airflow.cfg
-.pipeline/settings.yaml
-.pipeline/airflow.db
-.pipeline/airflow-webserver.pid
-.pipeline/webserver_config.py
-.pipeline/logs
-.pipeline/standalone_admin_password.txt
-.pipeline/.DS_Store
-.pipeline/__pycache__/
-.pipeline/.env
-.pipeline/.venv
-.pipeline/.airflowctl
+pipeline/airflow.cfg
+pipeline/settings.yaml
+pipeline/airflow.db
+pipeline/airflow-webserver.pid
+pipeline/webserver_config.py
+pipeline/logs
+pipeline/standalone_admin_password.txt
+pipeline/.DS_Store
+pipeline/__pycache__/
+pipeline/.env
+pipeline/.venv
+pipeline/.airflowctl
 # reviews.csv file is too big for github (see README.md to download from Google Drive)
-.pipeline/dags/reviews.csv
+pipeline/dags/reviews.csv
