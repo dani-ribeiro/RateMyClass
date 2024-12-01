@@ -48,6 +48,12 @@ The `get_reviews` task in the `data_collection` task group may take around 10 mi
 #    task_id='get_reviews'
 #)
 ```
+7. Run data visualizations
+    ```bash
+    streamlit run streamlit_app/rmc_app.py 
+    ```
+8. Open `localhost:8501`
+
 
 ## Data Collection
 
