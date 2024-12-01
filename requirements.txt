@@ -2,3 +2,7 @@ pandas
 requests
 fuzzywuzzy
 airflowctl
+streamlit
+snowflake-connector-python
+numpy
+matplotlib
