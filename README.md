@@ -51,13 +51,13 @@ The `get_reviews` task in the `data_collection` task group may take around 10 mi
 
 6. Connect your Snowflake account in [snowflake_info.py](streamlit_app/snowflake_info.py)
     ```python
-        class SnowflakeInfo:
-        ANIMAL = ''
-        USERNAME = ''
-        PASSWORD = ''
-        ACCOUNT = ''
-        DATABASE = f'{ANIMAL}_DB'
-        SCHEMA = f'RATE_MY_CLASS'
+    class SnowflakeInfo:
+    ANIMAL = ''
+    USERNAME = ''
+    PASSWORD = ''
+    ACCOUNT = ''
+    DATABASE = f'{ANIMAL}_DB'
+    SCHEMA = f'RATE_MY_CLASS'
     ```
 7. Run data visualizations
     ```bash
