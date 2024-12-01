@@ -17,3 +17,9 @@ pipeline/.airflowctl
 # reviews.csv file is too big for github (see README.md to download from Google Drive)
 pipeline/dags/reviews.csv
 pipeline/dags/data_collection/get_reviews/professors.json
+
+# streamlit app
+streamlit_app/.DS_Store
+streamlit_app/__pycache__/
+streamlit_app/streamlit_env/
+streamlit_app/snowflake_info
