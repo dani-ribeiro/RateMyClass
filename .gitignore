@@ -16,3 +16,4 @@ pipeline/.venv
 pipeline/.airflowctl
 # reviews.csv file is too big for github (see README.md to download from Google Drive)
 pipeline/dags/reviews.csv
+pipeline/dags/data_collection/get_reviews/professors.json
