@@ -143,7 +143,7 @@ def upload_to_snowflake(dataframes):
                     textbook_usage BOOLEAN,
                     thumbs_up INTEGER,
                     thumbs_down INTEGER,
-                    sentiment_score VARCHAR,
+                    sentiment_score FLOAT,
                     FOREIGN KEY (class_id) REFERENCES classes(class_id),
                     FOREIGN KEY (professor_id) REFERENCES professors(professor_id)
                 )
