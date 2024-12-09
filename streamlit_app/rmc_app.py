@@ -63,13 +63,12 @@ ax2.set_xticks(range(len(df_difficulty['DEPARTMENT_NAME'])))
 ax2.set_xticklabels(df_difficulty['DEPARTMENT_NAME'], rotation=45, ha='right', fontsize=8)
 st.pyplot(fig2)
 
-
 query_quality_over_time = """
-SELECT 
+SELECT
     DATE_TRUNC('month', DATE) AS month, 
     AVG(QUALITY) AS avg_quality
 FROM FACT_REVIEW
-WHERE QUALITY iS NOT NULL
+WHERE QUALITY IS NOT NULL
 GROUP BY month
 ORDER BY month;
 """
@@ -131,7 +130,6 @@ fig5, ax5 = plt.subplots()
 ax5.pie(df_grades_grouped['COUNT'], labels=df_grades_grouped['GRADE'], autopct='%1.1f%%', textprops={'fontsize': 10})
 st.pyplot(fig5)
 
-
 # Step 1: Fetch all departments
 query_departments = """
 SELECT DISTINCT department_name 
@@ -180,14 +178,15 @@ if selected_department:
     query_top_professors_by_quality = f"""
     SELECT 
         p.professor_name AS professor_name, 
-        AVG(r.QUALITY) AS avg_quality
+        AVG(r.QUALITY) AS avg_quality,
+        COUNT(r.REVIEW_ID) AS review_count
     FROM FACT_REVIEW AS r
     JOIN DIM_PROFESSOR AS p ON r.PROFESSOR_ID = p.PROFESSOR_ID
     JOIN DIM_DEPARTMENT AS d ON r.DEPARTMENT_ID = d.DEPARTMENT_ID
     WHERE d.DEPARTMENT_NAME = '{selected_department}'
         AND r.DATE >= DATEADD(year, -5, CURRENT_DATE)
     GROUP BY professor_name
-    ORDER BY avg_quality DESC
+    ORDER BY avg_quality DESC, review_count DESC
     LIMIT 5;
     """
     df_top_professors_by_quality = get_data_from_snowflake(query_top_professors_by_quality)
@@ -195,14 +194,15 @@ if selected_department:
     query_top_professors_easiness = f"""
     SELECT 
         p.professor_name AS professor_name, 
-        AVG(r.DIFFICULTY) AS avg_difficulty
+        AVG(r.DIFFICULTY) AS avg_difficulty,
+        COUNT(r.REVIEW_ID) AS review_count
     FROM FACT_REVIEW AS r
     JOIN DIM_PROFESSOR AS p ON r.PROFESSOR_ID = p.PROFESSOR_ID
     JOIN DIM_DEPARTMENT AS d ON r.DEPARTMENT_ID = d.DEPARTMENT_ID
     WHERE d.DEPARTMENT_NAME = '{selected_department}'
         AND r.DATE >= DATEADD(year, -5, CURRENT_DATE)
     GROUP BY professor_name
-    ORDER BY avg_difficulty ASC
+    ORDER BY avg_difficulty ASC, review_count DESC
     LIMIT 5;
     """
     df_top_professors_easiness = get_data_from_snowflake(query_top_professors_easiness)
@@ -279,13 +279,14 @@ if selected_department:
             p.professor_name AS professor_name, 
             AVG(r.QUALITY) AS avg_quality, 
             AVG(r.DIFFICULTY) AS avg_difficulty, 
-            AVG(r.SENTIMENT_SCORE) AS avg_sentiment
+            AVG(r.SENTIMENT_SCORE) AS avg_sentiment,
+            COUNT(r.REVIEW_ID) AS review_count
         FROM FACT_REVIEW AS r
         JOIN DIM_CLASS AS c ON r.CLASS_ID = c.CLASS_ID
         JOIN DIM_PROFESSOR AS p ON r.PROFESSOR_ID = p.PROFESSOR_ID
         WHERE c.COURSE_CODE = '{selected_class}'
         GROUP BY professor_name
-        ORDER BY avg_quality DESC;
+        ORDER BY avg_quality DESC, review_count DESC;
         """
         df_top_professors_class = get_data_from_snowflake(query_top_professors_class)
 
@@ -294,8 +295,7 @@ if selected_department:
         SELECT 
             YEAR(r.DATE) AS year, 
             AVG(r.QUALITY) AS avg_quality, 
-            AVG(r.DIFFICULTY) AS avg_difficulty, 
-            AVG(r.SENTIMENT_SCORE) AS avg_sentiment
+            AVG(r.DIFFICULTY) AS avg_difficulty
         FROM FACT_REVIEW AS r
         JOIN DIM_CLASS AS c ON r.CLASS_ID = c.CLASS_ID
         WHERE c.COURSE_CODE = '{selected_class}'
@@ -303,6 +303,19 @@ if selected_department:
         ORDER BY year;
         """
         df_metrics_trend = get_data_from_snowflake(query_metrics_trend)
+
+
+        query_sentiment_trend = f"""
+        SELECT 
+            YEAR(r.DATE) AS year, 
+            AVG(r.SENTIMENT_SCORE) AS avg_sentiment
+        FROM FACT_REVIEW AS r
+        JOIN DIM_CLASS AS c ON r.CLASS_ID = c.CLASS_ID
+        WHERE c.COURSE_CODE = '{selected_class}'
+        GROUP BY year
+        ORDER BY year
+        """
+        df_sentiment_trend = get_data_from_snowflake(query_sentiment_trend)
 
         # Display class-level data
         st.subheader(f"Top Professors for {selected_class}")
@@ -312,12 +325,21 @@ if selected_department:
         fig2, ax2 = plt.subplots()
         ax2.plot(df_metrics_trend['YEAR'], df_metrics_trend['AVG_QUALITY'], label="Quality", color="blue")
         ax2.plot(df_metrics_trend['YEAR'], df_metrics_trend['AVG_DIFFICULTY'], label="Difficulty", color="orange")
-        ax2.plot(df_metrics_trend['YEAR'], df_metrics_trend['AVG_SENTIMENT'], label="Sentiment", color="green")
         ax2.set_title(f"Metrics Trend for {selected_class}")
         ax2.set_xlabel("Year")
         ax2.set_ylabel("Score")
         ax2.legend()
         st.pyplot(fig2)
+
+        # Sentiment trend plot
+        fig3, ax3 = plt.subplots()
+        ax3.plot(df_sentiment_trend['YEAR'], df_sentiment_trend['AVG_SENTIMENT'], label="Sentiment Over Time")
+        ax3.axhline(df_sentiment_avg['AVG_SENTIMENT'][0], color="red", linestyle="--", label="Average Sentiment")
+        ax3.set_title("Sentiment Trend Over Time")
+        ax3.set_xlabel("Year")
+        ax3.set_ylabel("Sentiment Score")
+        ax3.legend()
+        st.pyplot(fig3)
 
         # Grade distribution query
         query_grade_distribution_class = f"""
